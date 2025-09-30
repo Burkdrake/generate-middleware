@@ -64,15 +64,6 @@
   (is-some (map-get? service-platforms owner))
 )
 
-;; Adds an interaction to the platform's interaction list
-(define-private (add-interaction-to-platform-list (owner principal) (interaction-id (string-ascii 64)))
-  (let (
-    (current-interactions (default-to (list) (map-get? platform-interactions owner)))
-  )
-    (map-set platform-interactions owner (append current-interactions interaction-id))
-  )
-)
-
 ;; Validates if an interaction is registered to the owner
 (define-private (is-interaction-registered (owner principal) (interaction-id (string-ascii 64)))
   (is-some (map-get? service-interactions {owner: owner, interaction-id: interaction-id}))
@@ -91,36 +82,6 @@
       platform-id: platform-id,
       registration-time: block-height
     })
-    
-    (ok true)
-  )
-)
-
-;; Registers a new Service Interaction for the middleware platform
-(define-public (register-interaction 
-    (interaction-id (string-ascii 64))
-    (interaction-name (string-ascii 64))
-    (interaction-type (string-ascii 32)))
-  (let (
-    (caller tx-sender)
-  )
-    ;; Check that caller has a registered Service Platform
-    (asserts! (is-service-platform-owner caller) ERR-SERVICE-PLATFORM-NOT-REGISTERED)
-    ;; Check that interaction isn't already registered
-    (asserts! (not (is-interaction-registered caller interaction-id)) ERR-INTERACTION-ALREADY-REGISTERED)
-    
-    ;; Register the interaction
-    (map-set service-interactions 
-      {owner: caller, interaction-id: interaction-id}
-      {
-        interaction-name: interaction-name,
-        interaction-type: interaction-type,
-        registration-time: block-height
-      }
-    )
-    
-    ;; Add interaction to platform's interaction list
-    (add-interaction-to-platform-list caller interaction-id)
     
     (ok true)
   )
